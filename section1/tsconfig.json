@@ -1,6 +1,9 @@
 {
-  "complierOptions": {
-    "target": "ESNext" // es5 구버전 /ESNext 자바스크립트 치신버전
+  "compilerOptions": {
+    "target": "ESNext", // es5 구버전 /ESNext 자바스크립트 치신버전
+    "module": "ESNext", // 모듈을 어떤 방식으로 사용할지
+    "outDir": "dist", // 어디로 저장될지
+    "strict": true // 엄격하게 검사,
   },
   "include": ["src"] // 컴파일할 범위를 알려줌
 }
