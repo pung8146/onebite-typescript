@@ -1,0 +1,6 @@
+{
+  "complierOptions": {
+    "target": "ESNext" // es5 구버전 /ESNext 자바스크립트 치신버전
+  },
+  "include": ["src"] // 컴파일할 범위를 알려줌
+}
