@@ -3,7 +3,7 @@
     "target": "ESnext",
     "module": "ESNext",
     "outDir": "dist",
-    "strict": false,
+    "strict": true,
     "moduleDetection": "force"
   },
   "ts-node": {
