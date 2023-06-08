@@ -1,95 +1,70 @@
-[인프런 한입크기로 잘라먹는 타입스크립트 - 이정환](https://www.inflearn.com/course/%ED%95%9C%EC%9E%85-%ED%81%AC%EA%B8%B0-%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8/dashboard)님의 강의를 보고
-내용을 정리한 포스팅입니다
+# 🥇 타입계층도
 
-# 🥇 객체 타입의 호환성
+# 🥇 Unknown 타입(전체 집합)
 
-> 어떤 객체 타입을 다른 객체 타입으로 취급해도 괜찮은가? ** 추가프로퍼티가 없는 / 조건이 더적은 타입이 슈퍼타입이됩니다. **
-
-# 🥇 타입 호환표와 계층표 둘중 편한걸로 이해하면 됩니다.
-
-## 🥈 타입 계층표
-
-![](https://velog.velcdn.com/images/pung8146/post/27174401-b113-4a8d-a8ff-c27b19b1478b/image.png)
-
-## 🥈 타입 호환표
-
-![](https://velog.velcdn.com/images/pung8146/post/5aa82306-35fb-4995-8773-7717f2e21160/image.png)
+> 타입 계층도 최상단의 위치하고 있는 Unknown 타입 (전체 집합)
 
 ```tsx
-type Animal = {
-  name: string;
-  color: string;
-};
+function unknwonExma() {
+  let a: unKnown = 1;
+  let b: unKnown = true;
+  let c: unKnown = null;
+  /// ... 모든 값을 넣을 수 있습니다.
+  //  업캐스팅
+  let unknownVar: unknown;
 
-type Dog = {
-  name: string;
-  color: string;
-  breed: string;
-};
-
-let animal: Animal = {
-  name: "기린",
-  color: "yellow",
-};
-
-let dog : Dog ={
-    name:'돌돌이',
-    color:'brown',
-    breed:"푸들'
+  let num: number = unknownVar;
+  let str: string = unknownVar;
+  // 모든 값을 넣을 수 없습니다.
+  // 다운 캐스팅
 }
-
-animal = dog;// 에러가 일어나지 않습니다
-dog = animal;// 에러가 일어 납니다.
 ```
 
-## 🥈 추가 프로퍼티검사
-
-> 객체타입의 변수를 초기화할때 skill같은 초과프로퍼티가 book에서는 없기에 작동되지 않습니다.
+# 🥇 Never 타입(공집합)
 
 ```tsx
-type Book = {
-    name:string,
-    price:number
-}
-
-type ProgrammingBook = {
-    name:string,
-    price:number,
-    skill:string,
-}
-
-let book:Book;
-let programmingBook:ProgrammingBook = {
-    name:'한 입 크기로 잘라 먹는 리액트',
-    number:33000,
-    skill:'reactjs',
-}
-
-book = programmingBook; // 업 캐스팅 가능합니다
-programmingBook = book; // 다운 캐스팅 불가능합니다
-
-let book2: Book = {
-    name:'한 입 크기로 잘라 먹는 리액트',
-    number:33000,
-    skill:'reactjs',// 오류가 출력됩니다
+function neverExam() {
+  function neverFunc(): never {
+    while (true) {}
   }
 
-let book3: book = programmingBook; // 초과 프로퍼티 검사가 발동하지 않습니다.
-
-function func(book :Book) { // 함수의 매개변수에도 타입이 지정 가능합니다.
-    name:'한 입 크기로 잘라 먹는 리액트',
-    number:33000,
-    skill:'reactjs',// 오류가 출력됩니다
+  let num: number = neverFunc();
+  let str: string = neverFunc();
+  // never 타입은 모든 타입의 sub 타입이기때문에 그 어떤 타입 변수에도 넣을수있습니다
+  // 업캐스팅
 }
-// 만약에 사용한다면
-func(programmingBook)
 ```
 
-### 🥉 기본 타입간의 호환성
+# 🥇 Void 타입
 
 ```tsx
-let num1: number = 10;
-let num2: 10 = 10;
+function voidExam() {
+  function voidFunc(): void {
+    console.log("hi");
+    return undefined;
+  }
 
-num1 = num2; // 허용됩니다 (업캐스팅)
+  let voidVar: void = undefined;
+}
 ```
+
+# 🥇 Any 타입
+
+> 모든 타입의 다운캐스팅 업캐스팅 가능합니다 (단! never 타입을 제외하고)
+
+```tsx
+function anyExam() {
+  let unknownVar: unknown;
+  let anyVar: any;
+  let undefinedVar: undefined;
+  let neverVar: never;
+  anyVar = unknownVar;
+  //  다운 캐스팅 해도 문제가 없습니다.
+  undefinedVar = anyVar;
+  //  다운 캐스팅 해도 문제가 없습니다.
+  neverVar = anyVar;
+  // 네버 타입에는 그 어떤 타입도 다운 캐스팅 할 수 없습니다.
+}
+```
+
+# 🥈 타입 호환성
