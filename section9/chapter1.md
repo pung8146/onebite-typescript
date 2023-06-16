@@ -1,114 +1,71 @@
 [인프런 한입크기로 잘라먹는 타입스크립트 - 이정환](https://www.inflearn.com/course/%ED%95%9C%EC%9E%85-%ED%81%AC%EA%B8%B0-%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8/dashboard)님의 강의를 보고
 내용을 정리한 포스팅입니다
 
-# 🥇조건부 타입 소개
+# 🥇 분산적인 조건부 타입
 
-## 조건부타입 사용법
-
-```tsx
-type A = number ①extends string ? string : number;
-```
-
-> ① 넘버 타입이 스트링 타입을 확장하는 타입이맞다면 stirng 아니면 number => 타입A 는 number타입이 됩니다.
-
-## 객체 타입
+> 조건부 타입이라는건 조건부타입을 유니온타입과 함께 사용할때 조건부타입이 분산적으로 동작하게 업그레이드되는것
 
 ```tsx
-type ObjA = {
-  a: number; // 슈퍼타입
-};
+type StringNumberSwitch<T> = T extends number ? string : number;
 
-type ObjB = {
-  a: number; // 서브타입
-  b: number;
-};
-
-type B = ObjB extends ObjA ? number : string; // 참이되어 number 타입이 됩니다
+let a: StringNubmerSwitch<number>; // string출력이됩니다
+let b: StringNubmerSwitch<string>; // number출력됩니다
+let c: StringNubmerSwitch①<number | string>; //<string|number> 타입으로 출력됩니다
+let d: StringNubmerSwitch②<boolean | number | string>; //<string|number> 타입으로 출력됩니다
 ```
 
-## 제네릭 과 조건부 타입
+> ① 유니온타입을 넣을경우 한번은 number, 다른한번 string 타입이 .들어가고 과정으로 두개의 결과가나옵니다
+> ① StringNumberSwitch<number> | StringNumberSwitch<stirng>
+> ① 이후 다시 유니온타입으로 묶이고 <string|number> 가 됩니다.
+
+> ② 1단계 세개의 결과로 분리됩니다.
+> ② 이후 유니온으로 묶이게 됩니다 <number | string | number>
+> ② 중복을 제거하면 <number | string >가 됩니다
+
+## 실용적인 예제
+
+> 유니온에서 특정 타입만 제거 하는 방법
 
 ```tsx
-type StringNumberSwitch①<T> = T extends number ? string : number;
+type Exclude<T, U> = T extends U ? never : T;
 
-let varA : StringNumberSwitch<number>// string출력
-let varB : StringNumberSwitch<string>// number출력
+type A = Exclude<number | string | boolean, string>;
+ 1 단계
+ Exclude<number , string> |
+ Exclude<string , string> |
+ Exclude<boolean, string>
 
+ 2 단계
+ T:number U:string 넘버는 스트링의 서브타입이 아니므로 거짓 T => number |
+ never |
+ boolean이 출력
+
+ 3 결과
+ number | never | boolean 이 됩니다
+
+ 4 최종결과
+ never 는 공집합이므로 number | boolean 이 됩니다
 ```
 
-> ① 제네릭 타입 과 같이쓰면 타입을 가변적으로 쓰면서도 논리의흐름에 따라 타입을 바꿔줄수있습니다.
+## 실용적인 예제2
 
-## 타입이 string 하나 일 경우 함수사용에 문제가 없습니다.
+> U 에 해당되는거만 출력합니다
 
 ```tsx
-function removeSpaces1(text: string) {
-  return text.replaceAll(" ", ""); // 모든 공백을 빈문자로 만들어줌
-}
+type Extract<T, U> = T extends U ? T : nerver;
 
-let result1 = removeSpaces1("hi im Psh");
-result.toUpperCase(); // 문자열 이기 때문에 사용가능합니다
+type B = Extract<number | string | boolean, string>;
 ```
 
-## 유니온 타입으로 사용시
-
-> undefined 가 추가되었기 때문에 오류가 발생합니다.
+## 분산적인 조건부 타입이 되지 않을려면
 
 ```tsx
-function removeSpaces2(text: string | undefined | null) {
-  if (typeof text === "string") {
-    return text.replaceAll(" ", ""); // 타입좁히기를 사용해줘야합니다
-  } else {
-    return undefind;
-  }
-}
+type StringNumberSwitch<T> = T extends ①[number] ? string : number;
 
-let result2 = removeSpaces2("hi im Psh");
-result2.toUpperCase(); // undefined가 추가되어 오류가 나옵니다.
+let a: StringNubmerSwitch<number>; // string출력이됩니다
+let b: StringNubmerSwitch<string>; // number출력됩니다
+let c: StringNubmerSwitch<number | string>; //<string|number> 타입으로 출력됩니다
+let d: StringNubmerSwitch<boolean | number | string>; //<string|number> 타입으로 출력됩니다
 ```
 
-## 제네릭 타입과 조건부타입
-
-```tsx
-⑤function removeSpaces3①<T>(text: T): ②T extends string ? string : undefined
-
-
-function removeSpaces3①<T>(text: T): ②T extends string ? string : undefined {
-  if (typeof text === "string") {
-    return text.replaceAll(" ", "") ④as any;
-  } else {
-    return undefind;
-  }
-}
-
-let result3 = removeSpaces3(③"hi im Psh");
-result3.toUpperCase(); // unde
-
-let result4 = removeSpaces4(③undefined);
-```
-
-> ① <T>제네릭 함수를 만들고 매개변수의 타입도 T로 정의합니다
-> ② 반환값의 타입을 조건을 이용하여 string:undefined가 되게합니다
-> ③ 조건에 따라 원하는 반환값을 원하는대로 할 수 있습니다.
-> ④ T도 함수 내부에선 unknown 타입이라 as any 로 단언을 사용합니다.
-> ⑤ 함수오버러드 시그니쳐를 만듭니다.
-
-## 제네릭 타입과 조건부타입 (함수 오버러드 사용하기)
-
-```tsx
-①function removeSpaces3<T>(text: T): T extends string ? string : undefined
-②function removeSpaces3(text: any){
-  if (typeof text === "string") {
-    return text.replaceAll(" ", "") as any;
-  } else {
-    return undefind;
-  }
-}
-
-let result3 = removeSpaces3("hi im Psh");
-result3.toUpperCase(); // unde
-
-let result4 = removeSpaces4(undefined);
-```
-
-> ① 복사하여 함수 오버러드 시그니쳐를 생성합니다
-> ② 반환값타입 , 타입단원, 지우고 매개변수를 any로 설정합니다
+> ① extends 옆에 [] 감싸두면 분산되지 않습니다.
