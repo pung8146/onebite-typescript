@@ -1,94 +1,134 @@
 [인프런 한입크기로 잘라먹는 타입스크립트 - 이정환](https://www.inflearn.com/course/%ED%95%9C%EC%9E%85-%ED%81%AC%EA%B8%B0-%ED%83%80%EC%9E%85%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8/dashboard)님의 강의를 보고
 내용을 정리한 포스팅입니다
 
-# 🥇 keyof 연산자
+# 🥇 Pick<T>
 
-> - ** 특정개채 타입으로 부터 프로퍼티의키들을 스트링 유니온타입으로 추출합니다. **
-> - 무조건 타입에만 사용 가능합니다.
+> - 뽑다 고르다
+> - 객체 타입으로부터 특정 프로퍼티만 딱 골라내는 타입
 
-```tsx
-interface Person {
-  name: string;
-  age: number;
-}
-
-function getPropertyKey(person: Person, key: ⑴keyof ⑵Person ) {
-  return person[key];
-}
-
-const person: Person = {
-  name: "박상훈",
-  age: 30,
-};
-
-getPropertykey(person, "name"); // 박상훈이 출력
-```
-
-> ⑴ Person 객체 타입에 모든 프로퍼티의 키를 유니온타입으로 추출합니다.(수정 추가 될때 일일히 변경할 필요가없어집니다.)
-> ⑵ keyof 뒤에 무조건 타입(대문자) 가 와야됩니다
+## 예시 1
 
 ```tsx
-type Person = ⑴typeof person;
-
-function getPropertyKey(person: Person, key: ⑴keyof ⑵Person ) {
-  return person[key];
+interface Post {
+  title: string;
+  tags: string[];
+  content: string;
+  thumbnailURL?: string;
 }
 
-const person: Person = {
-  name: "박상훈",
-  age: 30,
+const legacyPost: Pick<Post, "title" | "content"> = {
+  title: "옛날 글",
+  content: "옛날 컨텐츠",
 };
-
-getPropertykey(person, "name"); // 박상훈이 출력
-
 ```
 
-> ⑴ typeof 를 사용하면 변수person 의 타입을 추론해서 타입 별칭에 정의해줍니다.
+## 예시2
+
+Pick 타입 직접 구현하기
+
+> K타입변수의 적어도 객체의 프로퍼티 키만 넣을 수 있다는 조건을 만들어줍니다
 
 ```tsx
-type Person = ⑴typeof person;
-
-function getPropertyKey(person: Person, key: keyof ⑴typeof person ) {
-  return person[key];
+interface Post {
+  title: string;
+  tags: string[];
+  content: string;
+  thumbnailURL?: string;
 }
 
-const person: Person = {
-  name: "박상훈",
-  age: 30,
+type Pick<①T, ⑦K ⑧exnteds keyof T> = {
+  [③key in ④K]: ⑥T[key];
 };
 
-getPropertykey(person, "name"); // 박상훈이 출력
-
+const legacyPost: Pick<②Post, ⑤"title" | "content"> = {
+  title: "옛날 글",
+  content: "옛날 컨텐츠",
+};
 ```
 
-> ⑴ typeof person 은 객체 타입이 됩니다.
+> ①T타입에 ②Post 같은 객체 타입이 들어갑니다
+> 새롭게 만들어진 객체타입 ③key는 ④K에 들어있는⑤"title" | "content" 가 됩니다
+> ⑥T[key] 각각 벨류의 타입은 원본타입이 됩니다.
+> in 연산자 오른쪽엔 유니온타입이 들어올 수 있습니다
+> 타입변수 ⑦K(모든타입이 들어올수있어 문제가 발생할 수 있습니다)
+> ⑧exnteds keyof T 로 제한해줍니다.
+> ⑧exnteds keyof T ②Post를 전달해버리면
+> K extneds 'title' | 'tags' | 'content' | 'thumbnailURL' === keyof T 치환됩니다
+> 타입변수 ⑦K에 ⑤"title" | "content" 할당되면
+> 'title' | 'content' extneds 'title' | 'tags' | 'content' | 'thumbnailURL' 가 최종적으로 되고 참이 됩니다.
 
-## opitoanl 선택지
+# Omit<T , K> 타입
+
+> - 생략하다,빼다
+> - 객체 타입으로 특종 프로퍼티를 제거 하는 작업
 
 ```tsx
-interface Person {
-  name: string;
-  age: number;
-  favoriteFood?: string; // optional property
-}
-
-const person: Person = {
-  name: "박상훈",
-  age: 30,
+const noTiltePost: Omit<Post, "title"> = {
+  cotent: "",
+  tags: [[]],
+  thumbnailURL: "",
 };
-
-// "name" | "age" | "favoriteFood"
-type PersonKeys = keyof Person;
-
-function printPersonProperty(key: PersonKeys) {
-  console.log(person[key]);
-}
-
-printPersonProperty("name"); // "박상훈"
-printPersonProperty("age"); // 30
-printPersonProperty("favoriteFood"); // undefined
 ```
 
-> 이 예제에서 keyof 연산자를 사용하여 Person 인터페이스의 모든 키를 PersonKeys라는 타입으로 선언했습니다. 이를 사용하여 printPersonProperty 함수를 정의하였는데, 이 함수는 Person 객체의 모든 속성값을 인쇄할 수 있습니다. 이 예제는 keyof가 어떻게 동작하는지, 그리고 TypeScript에서 이를 어떻게 활용할 수 있는지를 보여주고 있습니다.
+## Omit 예시 직접구현하기
 
-> 또한, 이 예제는 keyof가 optional property를 포함하는지에 대해서도 보여주고 있습니다. 여기서 "favoriteFood"은 optional property입니다. 따라서 keyof 연산자는 이 optional property를 포함한 모든 키를 반환합니다.
+```tsx
+type Omit<①T, ②K extends keyof T> = ③Pick<T, Exclude<keyof T, K>>;
+
+const noTiltePost: Omit<Post, "title"> = {
+  cotent: "",
+  tags: [[]],
+  thumbnailURL: "",
+};
+```
+
+진행과정
+
+> ①T=Post타입이 들어오며 ②K = 'title' 이들어옵니다
+> ③Pick<Post, Exclude<keyof Post, 'title'>> 로 변형됩니다
+> ③Pick<Post, Exclude<'title'| 'content'|'tags'|'thumbnailURL' , 'title'>> 로 변형됩니다
+> ③Pick<Post, Exclude< 'content'|'tags'|'thumbnailURL' > 로 변형됩니다
+
+# Record<K , V> 타입
+
+> ** 객체 타입을 만들어주는 유틸리티 타입 **
+> 객체타입을 새롭게 정의할때 인덱스 시그니쳐 처럼 유연하지만 좀더 제한적인 객체 타입을 정의할때 사용합니다 (사용빈도 높음)
+> 중복된 코드가 많을때 사용됩니다
+
+```tsx
+type ThumbnailLegacy = {
+  large: {
+    url: string;
+  };
+  medium: {
+    url: string;
+  };
+  small: {
+    url: string;
+  };
+  wathc: {
+    url: string;
+  };
+};
+
+type Thumbnail = Record①<"large" | "medium" | "small", ②{ url: string, ③size:number }>;
+```
+
+> 첫번째 ①타입변수로 <"large" | "medium" | "small" 객체의 프로퍼티키를 유니온으로 받습니다.
+> 두번째 타입변수로 ②{ url: string } 키들의 벨류타입을 받습니다.
+> 버전별로 새로운 프로퍼티가 추가되어야할때 ③,size:number 등 추가적으로 적어줍니다.
+
+## Record 예시 직접구현하기
+
+```tsx
+type Record<①K extends keyof any, V> = {
+  [key in K]: V;
+};
+
+type Thumbnail = Record<
+  "large" | "medium" | "small" | "watch",
+  { url: string; size: number }
+>;
+```
+
+> 적어도 타입변수①K 에 들어오는 타입은 어떤객체타입의 키를 추출해논 유니온 타입입니다
