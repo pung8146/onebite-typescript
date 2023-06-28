@@ -1,5 +1,5 @@
 {
-  "comilerOptions": {
+  "compilerOptions": {
     "target": "ES5",
     "module": "CommonJS",
     "strict": true,
@@ -7,5 +7,6 @@
     "esModuleInterop": true,
     "jsx": "react-jsx"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "extensions": [".js", ".jsx", ".ts", ".tsx"]
 }
